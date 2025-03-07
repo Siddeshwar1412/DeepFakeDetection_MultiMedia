@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepFake Detector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-black text-white">
+    <!-- Navigation Bar -->
+    <nav class="fixed top-0 left-0 w-full bg-gray-900 flex justify-between p-4 shadow-lg">
+        <img src="" alt="Logo" class="h-10 border border-yellow-500">
+        <div class="hidden md:flex space-x-6">
+            <a href="#" class="text-white hover:text-yellow-400">Home</a>
+            <a href="#" class="text-white hover:text-yellow-400">About Us</a>
+            <a href="#" class="text-white hover:text-yellow-400">Contact</a>
+        </div>
+        <div class="md:hidden text-white text-2xl cursor-pointer" onclick="toggleMenu()">☰</div>
+    </nav>
+
+    <main class="mt-20 p-6">
+        <h1 class="text-center text-3xl mb-4 font-bold">Upload File for DeepFake Detection</h1>
+
+        <!-- File Upload Section -->
+        <div class="flex justify-center gap-8">
+            <input type="file" id="upload" class="hidden" onchange="previewFile()">
+            <button onclick="document.getElementById('upload').click()"
+                class="bg-blue-500 px-6 py-2 rounded hover:bg-blue-700">
+                Choose File
+            </button>
+
+            <select id="fileType" class="bg-gray-800 text-white px-4 py-2 rounded">
+                <option value="image">Image</option>
+                <option value="audio">Audio</option>
+            </select>
+        </div>
+
+        <!-- File Preview Container -->
+        <div id="file-container" class="hidden w-full flex justify-center items-center mt-6"></div>
+
+        <!-- Predict Button -->
+        <button onclick="uploadFile()" class="bg-green-500 px-6 py-2 rounded hover:bg-green-700 mt-4 block mx-auto">
+            Predict
+        </button>
+        <p>For Video prediction, click the following <a href="E:\Minor_project\VideoWebPage\index.html">Link</a></p>
+        <!-- Loading Indicator -->
+        <div id="loader" class="hidden text-center mt-4">
+            <p class="text-lg">Processing...</p>
+            <div class="animate-spin h-10 w-10 border-t-4 border-white rounded-full mx-auto"></div>
+        </div>
+
+        <!-- Prediction Result -->
+        <div id="result" class="mt-6 text-center text-xl font-semibold hidden"></div>
+    </main>
+
+    <script>
+        // Toggle Navigation Menu (for mobile view)
+        function toggleMenu() {
+            document.querySelector("nav div:nth-child(2)").classList.toggle("hidden");
+        }
+
+        // Preview Selected File (Image, Video, or Audio)
+        function previewFile() {
+            const fileInput = document.getElementById("upload");
+            const fileContainer = document.getElementById("file-container");
+            const fileType = document.getElementById("fileType").value;
+
+            // Clear previous preview
+            fileContainer.innerHTML = "";
+            fileContainer.classList.add("hidden");
+
+            if (!fileInput.files.length) return;
+
+            const file = fileInput.files[0];
+            const fileURL = URL.createObjectURL(file);
+            let previewElement;
+
+            // Create preview element based on file type
+            if (fileType === "image") {
+                previewElement = document.createElement("img");
+                previewElement.classList.add("max-w-full", "max-h-96", "rounded-lg");
+            } else if (fileType === "video") {
+                previewElement = document.createElement("video");
+                previewElement.controls = true;
+                previewElement.classList.add("max-w-full", "max-h-96", "rounded-lg");
+            } else if (fileType === "audio") {
+                previewElement = document.createElement("audio");
+                previewElement.controls = true;
+                previewElement.classList.add("w-1/2");
+            } else {
+                alert("Invalid file type selected!");
+                return;
+            }
+
+            previewElement.src = fileURL;
+            fileContainer.appendChild(previewElement);
+            fileContainer.classList.remove("hidden");
+
+            // Release memory when file changes
+            fileInput.addEventListener("change", () => {
+                URL.revokeObjectURL(fileURL);
+            });
+        }
+
+        // Upload File to Backend API
+        async function uploadFile() {
+            const fileInput = document.getElementById("upload");
+            const fileType = document.getElementById("fileType").value;
+
+            if (!fileInput.files.length) {
+                alert("Please select a file!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+            formData.append("fileType", fileType);  // Add file type to form data
+
+            try {
+                const response = await fetch("http://127.0.0.1:8080/predict", {
+                    method: "POST",
+                    body: formData,
+                    headers: { "Accept": "application/json" }
+                });
+
+                if (!response.ok) {
+                    // Log the response status and text
+                    console.error("❌ Response not OK. Status:", response.status);
+                    const errorText = await response.text();
+                    console.error("❌ Error Response:", errorText);
+                    throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log("✅ Response:", data);
+                alert("Prediction: " + data.prediction);
+            } catch (error) {
+                console.error("❌ Fetch Error:", error);
+                alert("Error: " + error.message);
+            }
+        }
+        async function testBackend() {
+            try {
+                const response = await fetch("http://127.0.0.1:8080/test");
+                const data = await response.json();
+                console.log("✅ Test Response:", data);
+                alert("Test: " + data.message);
+            } catch (error) {
+                console.error("❌ Test Error:", error);
+                alert("Test Error: " + error.message);
+            }
+        }
+
+        testBackend();  // Call this function to test
+        // Attach event listeners
+        document.getElementById("upload").addEventListener("change", previewFile);
+
+    </script>
+</body>
+
+</html>
