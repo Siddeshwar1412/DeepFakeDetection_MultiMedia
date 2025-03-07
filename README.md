@@ -1,4 +1,5 @@
-# **DeepFakeDetection_MultiMedia**
+# DeepFakeDetection_MultiMedia
+
 ## **Deepfake Detection System: A Multi-Modal Deep Learning Approach**
 
 ### **Overview**
@@ -11,7 +12,7 @@ This system integrates multiple deep learning models to classify media as **real
 ---
 
 ## **Project Structure**
-The project consists of a **frontend (HTML, CSS, JavaScript)** and a **backend (Flask, TensorFlow)** that work together seamlessly.  
+The project consists of a **frontend (HTML, CSS, JavaScript)** and a **backend (Flask, TensorFlow, PyTorch)** that work together seamlessly.  
 
 The **frontend** allows users to upload images, audio, or video files, which are then processed by the **backend** using deep learning models. The backend processes these files and sends the results back to the frontend for display.
 
@@ -24,31 +25,29 @@ The **frontend** allows users to upload images, audio, or video files, which are
 
 ## **Models Used**
 
-### **1. Image Detection Model (CNN)**
+### **1. Image Detection Model (CNN - PyTorch)**
 - **Description**: A Convolutional Neural Network (CNN) processes images to detect subtle visual artifacts introduced during manipulation.
 - **Preprocessing**:  
   - Images are resized, normalized, and optionally converted to a different color space to highlight manipulation artifacts.
-- **Model Type**: TensorFlow-based CNN.
+- **Framework**: PyTorch
 
-### **2. Audio Detection Model (CNN)**
+### **2. Image Classification Model (PyTorch)**
+- **Description**: A separate classification model that further analyzes detected fake images for classification.
+- **Framework**: PyTorch
+
+### **3. Audio Detection Model (CNN - TensorFlow)**
 - **Description**: A CNN model trained to detect fake audio by analyzing the **Mel-Frequency Cepstral Coefficients (MFCCs)**, which capture the frequency characteristics of audio signals.
 - **Preprocessing**:  
   - Audio files are resampled, split into frames, and converted into MFCC features for the model.
-- **Model Type**: TensorFlow-based CNN.
-
-### **3. Video Detection Model (Hybrid CNN + LSTM)**
-- **Description**: A hybrid model that combines **CNNs for frame-based analysis** and **LSTMs for sequential, temporal feature extraction** from video frames.
-- **Preprocessing**:  
-  - Videos are split into individual frames, resized, and normalized before being processed.  
-  - Audio from the video is also analyzed through the audio model.
-- **Model Type**: TensorFlow-based CNN + LSTM hybrid model.
+- **Framework**: TensorFlow
 
 ---
 
 ## **Core Technologies**
-- **TensorFlow & Keras**: Used for building, training, and deploying the deep learning models (CNNs and LSTMs).
+- **TensorFlow & Keras**: Used for training and deploying the audio deep learning model.
+- **PyTorch**: Used for building, training, and deploying the image detection and classification models.
 - **Flask**: A lightweight web framework for handling HTTP requests, file uploads, and response generation.
-- **OpenCV**: Used for image and video pre-processing, including resizing, frame extraction, and color space conversion.
+- **OpenCV**: Used for image pre-processing, including resizing and color space conversion.
 - **LibROSA**: Used for audio processing tasks, including resampling and feature extraction (MFCCs).
 - **JavaScript**: Enhances user experience with real-time updates, file validation, and AJAX requests for asynchronous communication with the backend.
 - **Tailwind CSS**: Provides a responsive, modern design for the frontend interface.
@@ -58,20 +57,18 @@ The **frontend** allows users to upload images, audio, or video files, which are
 ## **Workflow**
 1. **Frontend**: The user uploads an image, audio, or video file through the web interface.
 2. **Backend**: The file is sent to the Flask backend, where it is processed:  
-   - **Image**: Passed through a CNN to detect visual anomalies.  
-   - **Audio**: Processed for MFCCs and fed into a CNN for classification.  
-   - **Video**: Split into frames for CNN-based analysis, then passed through an LSTM for temporal analysis.  
+   - **Image**: Passed through a CNN (PyTorch) to detect visual anomalies.  
+   - **Audio**: Processed for MFCCs and fed into a CNN (TensorFlow) for classification.  
 3. **Prediction**: The model generates a prediction (**Real or Fake**) and sends it back to the frontend.
 4. **Result Display**: The frontend dynamically updates to show the detection result.
 
 ---
 
 ## **File Validation and Processing**
-- **Frontend**: Ensures only valid file formats are uploaded (**JPG, PNG, MP3, MP4, etc.**).
+- **Frontend**: Ensures only valid file formats are uploaded (**JPG, PNG, MP3, etc.**).
 - **Backend**: Converts media to the required format before processing:  
   - **Images**: Converted to **JPG**.  
   - **Audio**: Converted to **MP3**.  
-  - **Videos**: Converted to **MP4**.  
 
 ---
 
@@ -87,25 +84,33 @@ Both frontend and backend have error-handling mechanisms:
 
 ---
 
-## **Performance Optimization**
-### **Time Complexity**
-- **Image**: `O(n² * k²)` for convolution operations, where **n** is the image size and **k** is the kernel size.
-- **Audio**: `O(N)` for frame processing, where **N** is the number of frames in the audio signal.
-- **Video**: **Linear** with respect to the number of frames and **exponential** in terms of CNN and LSTM operations per frame.
+## **Execution Procedure**
+To execute the project, follow these steps:
 
-### **Space Complexity**
-- **Memory usage is high**, especially for video processing.
-- Intermediate feature maps and model weights are stored in memory during inference.
-- Optimized batch processing and **model quantization** can reduce memory consumption.
+### **1. Install Python**
+Ensure you have Python (latest stable version) installed. Download it from [Python's official site](https://www.python.org/downloads/).
 
----
+### **2. Upgrade Pip and Install Dependencies**
+Run the following commands to upgrade pip and install required dependencies:
+```sh
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
-## **Real-World Applications**
-- **Social Media**: Detects manipulated posts and videos, preventing misinformation and political propaganda.
-- **Identity Verification**: Helps institutions verify the authenticity of documents or video calls, reducing identity theft.
-- **Legal Use**: Assists forensic experts in authenticating digital evidence.
-- **Media**: Verifies the integrity of user-generated content.
-- **Education**: Ensures the authenticity of online examination videos.
+### **3. Download Datasets**
+You need to download relevant datasets for training and testing deepfake detection models from sources like **Kaggle** or **Google Datasets**.
+
+### **4. Run the Flask Server**
+Start the Flask backend:
+```sh
+python app.py
+```
+
+### **5. Open the Frontend**
+Open `index.html` in a browser or start a local development server.
+
+### **6. Upload Files and Get Predictions**
+Upload an image, audio, or video file to get real-time predictions.
 
 ---
 
@@ -118,10 +123,8 @@ Both frontend and backend have error-handling mechanisms:
 ---
 
 ## **Conclusion**
-This deepfake detection system is designed to handle **images, audio, and video** with separate models for each media type, ensuring reliable and accurate results.  
+This deepfake detection system is designed to handle **images and audio** with separate models for each media type, ensuring reliable and accurate results.  
 
 By combining **state-of-the-art deep learning models, robust error handling, and real-time performance optimizations**, the system offers a **comprehensive solution for identifying manipulated content**.  
 
-The project is **scalable** and can be extended to include additional modalities or enhanced detection methods.
-
----
+The project is **scalable** and can be extended to include additional modalities or enhanced detection methods in the future.
